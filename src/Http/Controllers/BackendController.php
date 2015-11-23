@@ -16,25 +16,31 @@ namespace Claremontdesign\Cdbackend\Http\Controllers;
  */
 use Claremontdesign\Cdbase\Traits\Flasherror;
 use Claremontdesign\Cdbase\Traits\CurrentUser;
-use Claremontdesign\Cdbase\Modules\Traits\Controller as ModuleController;
-use Claremontdesign\Cdbase\Modules\ControllerInterface as ModuleControllerInterface;
 use Claremontdesign\Cdbase\Http\Controllers\Controller;
 
-class BackendController extends Controller implements ModuleControllerInterface
+class BackendController extends Controller
 {
 
 	use Flasherror,
-	 CurrentUser,
-	 ModuleController;
+	 CurrentUser;
+
+	/**
+	 *
+	 */
+	public function __construct()
+	{
+//		$arr = collect(['email' => 'd','username' => 'x']);
+//		$arr2 = collect(['email' => 'd','username' => 'x']);
+//		dd($arr->diff($arr2));
+		//$repo = app('cdbase')->createModelRepo(cd_config('auth.model'));
+		//dd($repo->byId(43)->roles());
+//		$repo = app('cdbase')->createModelRepo(cd_config('auth.roles'));
+//		dd($repo->ancestors(3));
+	}
 
 	public function index()
 	{
 		return view($this->viewName('index/index'));
-	}
-
-	public function widgets($widgets)
-	{
-		return view($this->viewName('index/widget'), compact('widgets'));
 	}
 
 	/**
@@ -44,7 +50,7 @@ class BackendController extends Controller implements ModuleControllerInterface
 	 */
 	protected function viewName($viewName)
 	{
-		return cd_backend_tag() . '::backend.templates.default.' . $viewName;
+		return cd_backend_view_name($viewName);
 	}
 
 }

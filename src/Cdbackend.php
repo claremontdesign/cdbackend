@@ -25,6 +25,9 @@ class Cdbackend extends Cdbase
 	 */
 	public function config()
 	{
-		return [__DIR__ . '/../config/config.php'];
+		return [
+			__DIR__ . '/../config/admin.php',
+			__DIR__ . '/../config/dashboard.php'
+			];
 	}
 }

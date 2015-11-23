@@ -45,7 +45,7 @@ if(!function_exists('cd_backend_template'))
 	 */
 	function cd_backend_template()
 	{
-		return cd_backend_tag() . '::templates.default.template';
+		return cd_backend_tag() . '::backend.templates.default.template';
 	}
 
 }
@@ -60,7 +60,7 @@ if(!function_exists('cd_backend_view_name'))
 	 */
 	function cd_backend_view_name($view)
 	{
-		return cd_backend_tag() . '::templates.default.' . $view;
+		return cd_backend_tag() . '::backend.templates.default.' . $view;
 	}
 
 }
