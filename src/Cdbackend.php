@@ -27,7 +27,7 @@ class Cdbackend extends Cdbase
 	{
 		return [
 			__DIR__ . '/../config/admin.php',
-			__DIR__ . '/../config/dashboard.php'
+			__DIR__ . '/../config/dashboard/dashboard.php'
 			];
 	}
 }

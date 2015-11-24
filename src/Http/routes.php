@@ -17,7 +17,7 @@ Route:get('claremontdesign/cdbackend', function(){
 	return 'ClaremontDesign Backend Package. Try more at <a href="' . cd_route('admin') . '" title="Backend Entry">Backend Gate</a>';
 });
 
-Route::get('/admin/login', ['as' => 'adminLogin', function () {
+Route::get('/admin/login', ['as' => 'adminlogin', function () {
 app('cdbase')->setSection('admin');
 $className = cd_config('auth.login.class');
 if(is_array($className))
@@ -27,7 +27,7 @@ if(is_array($className))
 $controller = new $className;
 return $controller->getLogin();
 }]);
-Route::post('/admin/login', ['as' => 'adminAdminLogin', function () {
+Route::post('/admin/login', ['as' => 'adminpostLogin', function () {
 app('cdbase')->setSection('admin');
 $className = cd_config('auth.login.class');
 if(is_array($className))
@@ -37,7 +37,7 @@ if(is_array($className))
 $controller = new $className;
 return $controller->postLogin(app('request'));
 }]);
-Route::get('/admin/logout', ['as' => 'adminLogout',
+Route::get('/admin/logout', ['as' => 'adminlogout',
 	function () {
 app('cdbase')->setSection('admin');
 $className = cd_config('auth.logout.class');
@@ -86,7 +86,14 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{task?}/{par
 			$hasAccess = $moduleInstance->hasAccess();
 			if(!$hasAccess)
 			{
-				cd_abort(401);
+				if(cd_auth_check())
+				{
+					cd_abort(401);
+				}
+				else
+				{
+					return redirect(cd_route('login'));
+				}
 			}
 			/**
 			 * Check if $action is dispatchable
@@ -100,7 +107,14 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{task?}/{par
 			 */
 			if(!$moduleInstance->checkActionAccess($action))
 			{
-				cd_abort(401);
+				if(cd_auth_check())
+				{
+					cd_abort(401);
+				}
+				else
+				{
+					return redirect(cd_route('login'));
+				}
 			}
 
 			$controller = $moduleInstance->controllerInstance();
@@ -140,6 +154,11 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{task?}/{par
 					return $controller->$widgetMethod($widgets);
 				}
 				return $controller->widgets($widgets);
+			}
+			$view = $moduleInstance->renderView($action, $controller);
+			if($view instanceof \Illuminate\View\View)
+			{
+				return $view;
 			}
 		}
 		cd_abort(404);
