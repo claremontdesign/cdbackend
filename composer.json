@@ -13,7 +13,7 @@
 			"Claremontdesign\\Cdbackend\\": "src/"
 		},
 		"files": [
-			"src/Cdbackend/helpers.php"
+			"src/Cdbackend/Helpers/helpers.php"
 		]
 	},
 	"autoload-dev": {
