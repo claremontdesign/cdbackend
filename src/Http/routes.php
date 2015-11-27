@@ -19,32 +19,20 @@ Route:get('claremontdesign/cdbackend', function(){
 
 Route::get('/admin/login', ['as' => 'adminlogin', function () {
 app('cdbase')->setSection('admin');
-$className = cd_config('auth.login.class');
-if(is_array($className))
-{
-	$className = cd_config('auth.login.class.admin');
-}
+$className = cd_config('auth.login.admin.class');
 $controller = new $className;
 return $controller->getLogin();
 }]);
 Route::post('/admin/login', ['as' => 'adminpostLogin', function () {
 app('cdbase')->setSection('admin');
-$className = cd_config('auth.login.class');
-if(is_array($className))
-{
-	$className = cd_config('auth.login.class.admin');
-}
+$className = cd_config('auth.login.admin.class');
 $controller = new $className;
 return $controller->postLogin(app('request'));
 }]);
 Route::get('/admin/logout', ['as' => 'adminlogout',
 	function () {
 app('cdbase')->setSection('admin');
-$className = cd_config('auth.logout.class');
-if(is_array($className))
-{
-	$className = cd_config('auth.logout.class.admin');
-}
+$className = cd_config('auth.logout.admin.class');
 $controller = new $className;
 return $controller->getLogout();
 }]);
@@ -88,7 +76,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{task?}/{par
 			{
 				if(cd_auth_check())
 				{
-					cd_abort(401);
+					cd_abort(401, ucfirst($moduleInstance->getAccess()) . ' Permission is required.');
 				}
 				else
 				{
@@ -100,7 +88,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{task?}/{par
 			 */
 			if(!$moduleInstance->checkAction($action))
 			{
-				cd_abort(404);
+				cd_abort(404, 'Module: ' . ucfirst($module) . ' or path not found');
 			}
 			/**
 			 * Check if currentUser has access to this action
@@ -109,7 +97,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{task?}/{par
 			{
 				if(cd_auth_check())
 				{
-					cd_abort(401);
+					cd_abort(401, ucfirst($moduleInstance->getAccess()) . ' Permission is required.');
 				}
 				else
 				{

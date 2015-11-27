@@ -15,6 +15,7 @@ namespace Claremontdesign\Cdbackend;
  * @project Claremontdesign
  * @package Cdbackend
  */
+
 class ServiceProvider extends \Illuminate\Support\ServiceProvider
 {
 
@@ -31,6 +32,19 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 	{
 		// Define the path for the view files
 		$this->loadViewsFrom(__DIR__ . '/../resources/views', cd_backend_tag());
+
+		$this->publishes([
+			__DIR__ . '/../resources/assets' => public_path('assets/claremontdesign/backend'),
+				], 'public');
+
+		$this->publishes([
+			__DIR__ . '/../resources/views' => base_path('resources/views/claremontdesign/cdbackend'),
+				], 'views');
+
+		$this->publishes([
+			__DIR__ . '/../database/migrations' => base_path('database/migrations')
+				], 'migrations');
+
 
 		// Loading the routes file
 		require __DIR__ . '/Http/routes.php';

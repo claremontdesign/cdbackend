@@ -6,5 +6,4 @@
 @section('body_bottom')
 @append
 @section('content')
-
 @stop

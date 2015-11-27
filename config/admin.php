@@ -19,4 +19,21 @@ return [
 	'module' => [
 		'class' => Claremontdesign\Cdbase\Modules\Http\ModuleController::class
 	],
+	'auth' => [
+		'enable' => true,
+		'login' => [
+			'enable' => true,
+			'admin' => [
+				'routeToRedirectIfAuth' => 'Module',
+				'class' => Claremontdesign\Cdbackend\Http\Controllers\Auth\AuthController::class
+			],
+		],
+		'logout' => [
+			'enable' => true,
+			'admin' => [
+				'routeToRedirectIfAuth' => 'Module',
+				'class' => Claremontdesign\Cdbackend\Http\Controllers\Auth\AuthController::class
+			],
+		],
+	],
 ];
