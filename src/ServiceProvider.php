@@ -42,7 +42,7 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 				], 'views');
 
 		$this->publishes([
-			__DIR__ . '/../database/migrations' => base_path('database/migrations')
+			__DIR__ . '/../database' => base_path('database')
 				], 'migrations');
 
 

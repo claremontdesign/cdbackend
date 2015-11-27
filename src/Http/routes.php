@@ -72,7 +72,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{task?}/{par
 			 * Check if current user has access to this Module
 			 */
 			$hasAccess = $moduleInstance->hasAccess();
-			if(!$hasAccess)
+			if(empty($hasAccess))
 			{
 				if(cd_auth_check())
 				{
@@ -149,7 +149,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{task?}/{par
 				return $view;
 			}
 		}
-		cd_abort(404);
+		cd_abort(404, 'Module Not Found.');
 	}
 
 	$backendClassname = cd_config('backend.class');

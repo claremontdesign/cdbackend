@@ -14,7 +14,7 @@
  *
  * Example of a Module
  */
-define('MODULE_DASHBOARD', 'dashboard');
+defined('MODULE_DASHBOARD') ?: define('MODULE_DASHBOARD', 'dashboard');
 $config = [
 	'modules' => [
 		'dashboard' => [
