@@ -40,7 +40,7 @@ return $controller->getLogout();
 /**
  * Wildcard routing for Admin
  */
-Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{task?}/{paramOne?}/{paramTwo?}', function($module = null, $action = null, $record = null, $task = null, $paramOne = null, $paramTwo = null){
+Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/{paramTwo?}/{paramThree?}/{paramFour?}', function($module = null, $action = null, $record = null, $paramOne = null, $paramTwo = null, $paramThree = null, $paramFour = null){
 
 //	if(!cd_auth_check())
 //	{
@@ -105,9 +105,12 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{task?}/{par
 				}
 			}
 
+			/**
+			 * Action Record
+			 */
+			$moduleInstance->checkParentRecord();
 			$controller = $moduleInstance->controllerInstance();
 			$controller->setAction($action);
-			$controller->setTask($task);
 			$controller->setRecord($record);
 			$controller->setParams(compact('paramOne', 'paramTwo'));
 			$methodName = camel_case(strtolower($requestMethod . '_' . $action));
@@ -156,7 +159,6 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{task?}/{par
 	$backendController = new $backendClassname;
 	$backendController->setModule($module);
 	$backendController->setAction($action);
-	$backendController->setTask($task);
 	$backendController->setRecord($record);
 	$backendController->setParams(compact('paramOne', 'paramTwo'));
 	return $backendController->index();
