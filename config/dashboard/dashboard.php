@@ -14,8 +14,30 @@
  *
  * Example of a Module
  */
-defined('MODULE_DASHBOARD') ?: define('MODULE_DASHBOARD', 'dashboard');
+defined('MODULE_DASHBOARD') ? : define('MODULE_DASHBOARD', 'dashboard');
 $config = [
+	'template' => [
+		'backend' => [
+			'nav' => [
+				'main' => [
+					'dashboard' => [
+						'breadcrumbs' => false,
+						'title' => 'Dashboard',
+						'label' => 'Dasbhoard',
+						'icon' => 'fa fa-home',
+						'access' => 'admin',
+						'enable' => true,
+						'url' => [
+							'route' => [
+								'name' => 'adminModule'
+							],
+						],
+						'children' => []
+					],
+				]
+			],
+		],
+	],
 	'modules' => [
 		'dashboard' => [
 			'enable' => true,
@@ -33,7 +55,9 @@ $config = [
 					'enable' => true,
 					'view' => [
 						'enable' => false,
-						'template' => cd_backend_view_name('index.index')
+						'template' => function(){
+					return cd_backend_view_name('index.index');
+						},
 					],
 					'widgets' => ['dashboard'],
 				],
@@ -47,7 +71,9 @@ $config = [
 			'access' => 'admin',
 			'view' => [
 				'enable' => true,
-				'template' => cd_backend_view_name('dashboard.index')
+				'template' => function(){
+			return cd_backend_view_name('dashboard.index');
+		},
 			],
 		]
 	]

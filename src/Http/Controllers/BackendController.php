@@ -17,11 +17,13 @@ namespace Claremontdesign\Cdbackend\Http\Controllers;
 use Claremontdesign\Cdbase\Traits\Flasherror;
 use Claremontdesign\Cdbase\Traits\CurrentUser;
 use Claremontdesign\Cdbase\Http\Controllers\Controller;
+use Claremontdesign\Cdbackend\Traits\Viewname;
 
 class BackendController extends Controller
 {
 
 	use Flasherror,
+	 Viewname,
 	 CurrentUser;
 
 	/**
@@ -41,16 +43,6 @@ class BackendController extends Controller
 	public function index()
 	{
 		return view($this->viewName('index/index'));
-	}
-
-	/**
-	 * REturn the View Name
-	 * @param string $viewName The View Name
-	 * @return string
-	 */
-	protected function viewName($viewName)
-	{
-		return cd_backend_view_name($viewName);
 	}
 
 }

@@ -14,10 +14,14 @@
  */
 return [
 	'backend' => [
-		'class' => Claremontdesign\Cdbackend\Http\Controllers\BackendController::class
+		'class' => Claremontdesign\Cdbackend\Http\Controllers\BackendController::class,
+		'design' => [
+			'template' => 'default',
+			'package' => 'cdbackend'
+		],
 	],
 	'module' => [
-		'class' => Claremontdesign\Cdbase\Modules\Http\ModuleController::class
+		'class' => Claremontdesign\Cdbackend\Http\Controllers\ModuleController::class
 	],
 	'auth' => [
 		'enable' => true,
