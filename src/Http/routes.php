@@ -42,21 +42,25 @@ return $controller->getLogout();
  */
 Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/{paramTwo?}/{paramThree?}/{paramFour?}', function($module = null, $action = null, $record = null, $paramOne = null, $paramTwo = null, $paramThree = null, $paramFour = null){
 
-//	if(!cd_auth_check())
-//	{
-//		return redirect(route('adminLogin'));
-//	}
-//	if(!cd_auth_is('admin'))
-//	{
-//		cd_abort(401);
-//	}
-
 	app('cdbase')->setSection('admin');
 	$requestMethod = \Request::method();
 
 	/**
-	 * Check if module can be instantiated
+	 * Check for minimum access to the Admin Section
 	 */
+	$minimumAccess = cd_config('backend.access.minimum', 'admin');
+	if(!cd_auth_is($minimumAccess))
+	{
+		if(cd_auth_check())
+		{
+			cd_abort(401, ucfirst($minimumAccess) . ' Permission is required to access "Admin".');
+		}
+		else
+		{
+			return redirect(cd_route('login'));
+		}
+	}
+
 	if(empty($module))
 	{
 		$module = 'dashboard';
@@ -76,13 +80,14 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 			{
 				if(cd_auth_check())
 				{
-					cd_abort(401, ucfirst($moduleInstance->getAccess()) . ' Permission is required.');
+					cd_abort(401, ucfirst($moduleInstance->getAccess()) . ' Permission is required to access module "' . ucfirst($module) . '".');
 				}
 				else
 				{
 					return redirect(cd_route('login'));
 				}
 			}
+
 			/**
 			 * Check if $action is dispatchable
 			 */
@@ -104,7 +109,6 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 					return redirect(cd_route('login'));
 				}
 			}
-
 			/**
 			 * Action Record
 			 */

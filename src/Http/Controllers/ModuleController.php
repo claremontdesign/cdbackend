@@ -30,6 +30,15 @@ class ModuleController extends CdbaseModuleController implements ModuleControlle
 	 */
 	public function widgets($widgets)
 	{
+		if($widgets instanceof \Closure)
+		{
+			$widgets = $widgets();
+		}
+		if($widgets instanceof \Illuminate\Http\RedirectResponse)
+		{
+			return $widgets;
+		}
+		cd_fire_events($this->module->getConfig('actions.' . $this->action() . '.events.controller.pre'));
 		$module = $this->module();
 		$meta = $module->getMetas($this->action());
 		$bodyClass = $meta->get('body_class');
@@ -38,6 +47,19 @@ class ModuleController extends CdbaseModuleController implements ModuleControlle
 		$pageSubTitle = $meta->get('page_subtitle');
 		cd_backend_set_breadcrumb($module->getBreadcrumb($this->action()));
 		$controller = $this;
+
+		if(!empty($widgets))
+		{
+			foreach ($widgets as $widgetIndex)
+			{
+				$response = cd_widget($widgetIndex, $controller, $this->module());
+				if($response instanceof \Illuminate\Http\RedirectResponse)
+				{
+					return $response;
+				}
+			}
+		}
+
 		return view($this->viewName('module.widget'), compact('widgets', 'controller', 'module', 'bodyClass', 'metaTitle', 'pageTitle', 'pageSubTitle'));
 	}
 

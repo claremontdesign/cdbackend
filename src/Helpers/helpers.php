@@ -127,19 +127,33 @@ if(!function_exists('cd_backend_render_nav_main'))
 				{
 					$children = collect($nav->get('children'));
 					$hasChildren = !$children->isEmpty();
+					if(empty($children[0]))
+					{
+						$hasChildren = false;
+					}
 					$title = $nav->get('title', null);
 					$url = cd_createUrl($nav->get('url', []));
 					$icon = $nav->get('icon', null);
 					$label = $nav->get('label', $title);
 					$str .= '<li class="" id="main-nav-' . $index . '">';
 					$str .= '<a href="' . $url . '" title="' . $title . '">';
-					$str .= '<i class="' . $icon . '"></i>';
+					$str .= '<i class="' . $icon . '"></i> ';
 					$str .= '<span class="title">' . $label . '</span>';
-					$str .= '</a>';
 					if($hasChildren)
 					{
 						$str .= '<span class="arrow"></span>';
+					}
+					$str .= '</a>';
+					if($hasChildren)
+					{
 						$str .= '<ul class="sub-menu">';
+
+						$str .= '<li class="" id="main-nav-' . $index . '">';
+						$str .= '<a href="' . $url . '" title="' . $title . '">';
+						$str .= '<i class="' . $icon . '"></i> ';
+						$str .= '<span class="title">' . $label . '</span>';
+						$str .= '</a>';
+						$str .= '</li>';
 						$str .= cd_backend_render_nav_main($children);
 						$str .= '</ul>';
 					}
@@ -173,11 +187,15 @@ if(!function_exists('cd_backend_render_breadcrumb'))
 				$nav = collect(cd_config('template.backend.nav.main.' . str_replace('nav::', '', $bread)), []);
 				if(!$nav->isEmpty())
 				{
-					$enable = $nav->get('enable', false);
+					$enable = $nav->get('breadcrumbs', false);
 					$access = $nav->get('access', 'admin');
-					if($enable && cd_auth_is($access))
-					{
+					//if($enable && cd_auth_is($access))
+					//{
 						$title = $nav->get('title', null);
+						if($title == 'Dashboard')
+						{
+							continue;
+						}
 						$url = cd_createUrl($nav->get('url', []));
 						$icon = $nav->get('icon', null);
 						$label = $nav->get('label', $title);
@@ -192,7 +210,7 @@ if(!function_exists('cd_backend_render_breadcrumb'))
 							$str .= '<i class="fa fa-angle-right"></i>';
 						}
 						$str .= '</li>';
-					}
+					//}
 				}
 			}
 		}
@@ -217,7 +235,7 @@ if(!function_exists('cd_backend_set_breadcrumb'))
 }
 
 
-if(!function_exists('cd_backend_set_entity_title'))
+if(!function_exists('cd_backend_set_entity'))
 {
 
 	/**
@@ -241,7 +259,7 @@ if(!function_exists('cd_backend_render_entity_title'))
 	 */
 	function cd_backend_render_entity_title()
 	{
-		// app('cdbackend')->entity($entity);
+		return app('cdbackend')->entity();
 	}
 
 }

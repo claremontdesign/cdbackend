@@ -15,6 +15,9 @@
 return [
 	'backend' => [
 		'class' => Claremontdesign\Cdbackend\Http\Controllers\BackendController::class,
+		'access' => [
+			'minimum' => 'salesman',
+		],
 		'design' => [
 			'template' => 'default',
 			'package' => 'cdbackend'

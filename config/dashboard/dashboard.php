@@ -21,15 +21,15 @@ $config = [
 			'nav' => [
 				'main' => [
 					'dashboard' => [
-						'breadcrumbs' => false,
+						'breadcrumb' => false,
 						'title' => 'Dashboard',
-						'label' => 'Dasbhoard',
+						'label' => 'Dashboard',
 						'icon' => 'fa fa-home',
 						'access' => 'admin',
 						'enable' => true,
 						'url' => [
 							'route' => [
-								'name' => 'adminModule'
+								'url' => '/admin'
 							],
 						],
 						'children' => []
@@ -43,9 +43,12 @@ $config = [
 			'enable' => true,
 			'name' => 'Dashboard',
 			'config' => [],
-			'access' => 'admin',
-			'attributes' => [
-				'breadcrumbs' => []
+			'metas' => [
+				'pagetitle' => 'Dashboard',
+				'pagesubtitle' => 'Feeling like a hommie.'
+			],
+			'breadcrumb' => [
+				'nav::dashboard',
 			],
 			/**
 			 * Actions
@@ -68,7 +71,6 @@ $config = [
 		'dashboard' => [
 			'enable' => true,
 			'type' => 'view',
-			'access' => 'admin',
 			'view' => [
 				'enable' => true,
 				'template' => function(){
