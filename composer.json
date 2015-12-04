@@ -2,6 +2,12 @@
 	"name": "claremontdesign/cdbackend",
 	"description": "Claremontdesign Backend Package",
 	"license": "ClaremontDesign License",
+	"repositories": [
+		{
+			"type": "composer",
+			"url": "http://claremontdesign.com/repo/"
+		}
+	],
 	"authors": [
 		{
 			"name": "Dennes B Abing",
@@ -13,7 +19,7 @@
 			"Claremontdesign\\Cdbackend\\": "src/"
 		},
 		"files": [
-			"src/Cdbackend/Helpers/helpers.php"
+			"src/Helpers/helpers.php"
 		]
 	},
 	"autoload-dev": {
@@ -23,7 +29,8 @@
 	},
 	"minimum-stability": "dev",
 	"require": {
-		"illuminate/support": "~5"
+		"illuminate/support": "~5",
+		"claremontdesign/cdbase": "dev-master"
 	},
 	"require-dev": {
 		"barryvdh/laravel-debugbar": "^2.0"
