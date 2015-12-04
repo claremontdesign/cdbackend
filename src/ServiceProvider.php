@@ -41,9 +41,9 @@ class ServiceProvider extends \Illuminate\Support\ServiceProvider
 			__DIR__ . '/../resources/views' => base_path('resources/views/claremontdesign/cdbackend'),
 				], 'views');
 
-		$this->publishes([
-			__DIR__ . '/../database' => base_path('database')
-				], 'migrations');
+//		$this->publishes([
+//			__DIR__ . '/../database' => base_path('database')
+//				], 'migrations');
 
 
 		// Loading the routes file
