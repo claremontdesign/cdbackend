@@ -94,7 +94,20 @@ if(!function_exists('cd_backend_asset'))
 	 */
 	function cd_backend_asset($asset = null)
 	{
-		return asset('assets') . '/backend/' . fixDoubleSlash(cd_backend_tag() . '/templates/default/' . $asset);
+		return asset('assets') . '/claremontdesign/backend/' . fixDoubleSlash('templates/default/' . $asset);
+	}
+
+}
+if(!function_exists('cd_backend_logo'))
+{
+
+	/**
+	 * Return the backend logo
+	 * @return string
+	 */
+	function cd_backend_logo()
+	{
+		return cd_config('backend.design.header.logo');
 	}
 
 }
@@ -193,7 +206,7 @@ if(!function_exists('cd_backend_render_breadcrumb'))
 
 					//if($enable && cd_auth_is($access))
 					//{
-					if($i < count($breads))
+					if($i <= count($breads))
 					{
 						$title = $nav->get('title', null);
 						if($title == 'Dashboard')
@@ -210,7 +223,7 @@ if(!function_exists('cd_backend_render_breadcrumb'))
 						}
 
 						$str .= '<a title="' . $title . '" href="' . $url . '">' . $label . '</a>';
-						if($i < (count($breads) - 1))
+						if($i < (count($breads)))
 						{
 							$str .= '<i class="fa fa-angle-right"></i>';
 						}

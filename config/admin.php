@@ -16,11 +16,17 @@ return [
 	'backend' => [
 		'class' => Claremontdesign\Cdbackend\Http\Controllers\BackendController::class,
 		'access' => [
-			'minimum' => 'salesman',
+			'minimum' => 'admin',
 		],
 		'design' => [
 			'template' => 'default',
-			'package' => 'cdbackend'
+			'package' => 'cdbackend',
+			'footer' => [
+				'text' => '&copy Copyright ' . date('Y') . ' Custom Application by <a href="http://claremontdesign.com" target="_blank">ClaremontDesign.com</a>. All rights reserved.',
+			],
+			'header' => [
+				'logo' => cd_backend_asset('metronic/logo.png'),
+			],
 		],
 	],
 	'module' => [
