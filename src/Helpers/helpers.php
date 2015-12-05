@@ -183,14 +183,18 @@ if(!function_exists('cd_backend_render_breadcrumb'))
 			foreach ($breads as $bread)
 			{
 				$i++;
-				// nav:: search main navigation
 				$nav = collect(cd_config('template.backend.nav.main.' . str_replace('nav::', '', $bread)), []);
+//				dd(cd_config('template.backend.nav.main.surveys'));
+//				dd(cd_config('template.backend.nav.main.surveys.children.questions'));
 				if(!$nav->isEmpty())
 				{
 					$enable = $nav->get('breadcrumbs', false);
 					$access = $nav->get('access', 'admin');
+
 					//if($enable && cd_auth_is($access))
 					//{
+					if($i < count($breads))
+					{
 						$title = $nav->get('title', null);
 						if($title == 'Dashboard')
 						{
@@ -204,13 +208,15 @@ if(!function_exists('cd_backend_render_breadcrumb'))
 						{
 							// $str .= '<i class="' . $icon . '"></i> ';
 						}
+
 						$str .= '<a title="' . $title . '" href="' . $url . '">' . $label . '</a>';
-						if($i < count($breads))
+						if($i < (count($breads) - 1))
 						{
 							$str .= '<i class="fa fa-angle-right"></i>';
 						}
-						$str .= '</li>';
+					}
 					//}
+					$str .= '</li>';
 				}
 			}
 		}
