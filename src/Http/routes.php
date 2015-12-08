@@ -66,6 +66,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 		$module = 'dashboard';
 		$action = 'index';
 	}
+	app('cdbackend')->setRouteParams(compact('module', 'action', 'record', 'paramOne', 'paramTwo', 'paramThree', 'paramFour'));
 	if(!empty($module))
 	{
 		$moduleInstance = cd_module($module);

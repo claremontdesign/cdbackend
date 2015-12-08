@@ -114,6 +114,21 @@ if(!function_exists('cd_backend_logo'))
 
 // </editor-fold>
 
+
+
+
+if(!function_exists('cd_backend_toolbars'))
+{
+	/**
+	 * Display Toolbars
+	 * @param type $position
+	 */
+	function cd_backend_toolbars($position)
+	{
+		return view(cd_cdbase_view_name('widgets.toolbar'), ['actions' => app('cdbackend')->toolbar($position),'position' => 'topleft']);
+	}
+}
+
 if(!function_exists('cd_backend_render_nav_main'))
 {
 
