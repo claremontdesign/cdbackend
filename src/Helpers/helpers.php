@@ -119,14 +119,16 @@ if(!function_exists('cd_backend_logo'))
 
 if(!function_exists('cd_backend_toolbars'))
 {
+
 	/**
 	 * Display Toolbars
 	 * @param type $position
 	 */
 	function cd_backend_toolbars($position)
 	{
-		return view(cd_cdbase_view_name('widgets.toolbar'), ['actions' => app('cdbackend')->toolbar($position),'position' => 'topleft']);
+		return view(cd_cdbase_view_name('widgets.toolbar'), ['actions' => app('cdbackend')->toolbar($position), 'position' => 'topleft']);
 	}
+
 }
 
 if(!function_exists('cd_backend_render_nav_main'))
@@ -138,6 +140,7 @@ if(!function_exists('cd_backend_render_nav_main'))
 	 */
 	function cd_backend_render_nav_main($navs = null)
 	{
+		$breads = app('cdbackend')->breadcrumb();
 		$str = '';
 		if(empty($navs))
 		{
@@ -153,6 +156,12 @@ if(!function_exists('cd_backend_render_nav_main'))
 				$access = $nav->get('access', 'admin');
 				if($enable && cd_auth_is($access))
 				{
+					$active = false;
+					$bread = 'nav::' . $index;
+					if(in_array($bread, $breads))
+					{
+						$active = true;
+					}
 					$children = collect($nav->get('children'));
 					$hasChildren = !$children->isEmpty();
 					if(empty($children[0]))
@@ -163,7 +172,7 @@ if(!function_exists('cd_backend_render_nav_main'))
 					$url = cd_createUrl($nav->get('url', []));
 					$icon = $nav->get('icon', null);
 					$label = $nav->get('label', $title);
-					$str .= '<li class="" id="main-nav-' . $index . '">';
+					$str .= '<li class="' . ($active ? 'active' : null) . '" id="main-nav-' . $index . '">';
 					$str .= '<a href="' . $url . '" title="' . $title . '">';
 					$str .= '<i class="' . $icon . '"></i> ';
 					$str .= '<span class="title">' . $label . '</span>';
@@ -277,23 +286,62 @@ if(!function_exists('cd_backend_set_entity'))
 	 * @param array $entity AssocArray of title, id
 	 *
 	 */
-	function cd_backend_set_entity($entity = [])
+	function cd_backend_add_focusedEntity($entity = [])
 	{
-		app('cdbackend')->setEntity($entity);
+		app('cdbackend')->addFocusedEntity($entity);
 	}
 
 }
 
-if(!function_exists('cd_backend_render_entity_title'))
+if(!function_exists('cd_backend_render_focusedEntity'))
 {
 
 	/**
 	 * Render the current entity title
 	 * return string
 	 */
-	function cd_backend_render_entity_title()
+	function cd_backend_render_focusedEntity()
 	{
-		return app('cdbackend')->entity();
+		$str = [];
+		$entities = app('cdbackend')->focusedEntity();
+		if(!empty($entities))
+		{
+			$i = 0;
+			foreach ($entities as $entity)
+			{
+				$helperAtt = [
+					'data-trigger="hover"',
+					'data-placement="right"'
+				];
+				$i++;
+				$pre = !empty($entity['pre']) ? $entity['pre'] : null;
+				$post = !empty($entity['post']) ? $entity['post'] : null;
+				if(!empty($entity['title']))
+				{
+					$title = $entity['title'];
+					$label = $title;
+					if(strlen($label) > 100)
+					{
+						$label = substr($label, 0, 100) . '...';
+					}
+					else
+					{
+						$helperAtt = [];
+					}
+					if($i == count($entities))
+					{
+						$str[] = '<h3 class="page-title popovers" ' . implode(' ', $helperAtt) . ' title="' . $title . '">' . $pre . $label . $post . '</h3>';
+					}
+				}
+			}
+		}
+		if(!empty($str))
+		{
+			return '<div class="portlet focusedEntity">
+								<div class="portlet-title">
+									<div class="caption">' . implode('', $str) . '</div></div></div>';
+		}
+		return null;
 	}
 
 }

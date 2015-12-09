@@ -117,24 +117,11 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 			$controller = $moduleInstance->controllerInstance();
 			$controller->setAction($action);
 			$controller->setRecord($record);
-			$controller->setParams(compact('paramOne', 'paramTwo'));
+			$controller->setParams(compact('paramOne', 'paramTwo', 'paramThree', 'paramFour'));
 			$methodName = camel_case(strtolower($requestMethod . '_' . $action));
 			if(method_exists($controller, $methodName))
 			{
 				return $controller->$methodName();
-			}
-			if(!empty($task))
-			{
-				$actionTaskMethod = camel_case(strtolower($requestMethod . '_' . $action . '_' . $task));
-				if(method_exists($controller, $actionTaskMethod))
-				{
-					return $controller->$actionTaskMethod();
-				}
-				$actionTask = camel_case(strtolower($action . '_' . $task));
-				if(method_exists($controller, $actionTask))
-				{
-					return $controller->$actionTask();
-				}
 			}
 			$widgets = $moduleInstance->widgets($action, $controller);
 			if(!empty($widgets))
