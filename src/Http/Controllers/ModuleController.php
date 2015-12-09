@@ -21,4 +21,10 @@ use Claremontdesign\Cdbackend\Traits\Viewname;
 class ModuleController extends CdbaseModuleController implements ModuleControllerInterface
 {
 	use Viewname;
+
+	/**
+	 * If to Display errors to alerts
+	 * @var boolean
+	 */
+	protected $errorsToAlerts = false;
 }
