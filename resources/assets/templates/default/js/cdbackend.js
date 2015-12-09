@@ -18,7 +18,7 @@ function cd_backend()
 		}, options);
 
 		that.find('tbody').sortable({
-			 placeholder: "ui-state-highlight",
+			placeholder: "ui-state-highlight",
 			helper: cdbackend_sortable_fixsorting,
 			stop: function(event, ui) {
 				cdbackend_sortable_renumber_table();
@@ -65,3 +65,36 @@ function cd_backend()
 /**
  * Sorting Table Rows
  */
+
+/**
+ * Form
+ */
+/**
+ * Form
+ */
+(function($) {
+	$.fn.cd_form = function(options) {
+
+		var that = this;
+
+		// This is the easiest way to have default options.
+		var settings = $.extend({
+		}, options);
+		that.find('.form-group.has-error').each(function() {
+			var tab = $(this).find('input,select,textarea').attr('data-tab');
+			if (tab)
+			{
+				$('#form-nav-tab-' + tab).addClass('nav-tab-has-error');
+				$('#formtab_' + tab).addClass('tab-content-has-error');
+			}
+		});
+		if (that.find('.form-nav-tab.has-error').length > 0)
+		{
+			that.find('.form-nav-tab').removeClass('active');
+			that.find('.form-tab-content').removeClass('active');
+			that.find('.form-nav-tab.nav-tab-has-error').eq(0).addClass('active');
+			that.find('.form-tab-content.tab-content-has-error').eq(0).addClass('active');
+		}
+
+	};
+}(jQuery));

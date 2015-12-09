@@ -113,10 +113,6 @@ if(!function_exists('cd_backend_logo'))
 }
 
 // </editor-fold>
-
-
-
-
 if(!function_exists('cd_backend_toolbars'))
 {
 
@@ -131,6 +127,86 @@ if(!function_exists('cd_backend_toolbars'))
 
 }
 
+
+if(!function_exists('cd_backend_render_nav'))
+{
+
+	/**
+	 * Render Nav based on the given navName index
+	 * @param string $navName
+	 * @return HTML
+	 */
+	function cd_backend_render_nav($navName, $navs = [])
+	{
+		$str = null;
+		$breads = [];
+		if($navName == 'main')
+		{
+			$breads = app('cdbackend')->breadcrumb();
+		}
+		if(empty($navs))
+		{
+			$navs = collect(cd_config('template.backend.nav.' . $navName), []);
+		}
+		if(!$navs->isEmpty())
+		{
+			if(!$navs->isEmpty())
+			{
+				foreach ($navs as $index => $nav)
+				{
+					$nav = collect($nav);
+					$enable = $nav->get('enable', false);
+					$access = $nav->get('access', 'admin');
+					if($enable && cd_auth_is($access))
+					{
+						$active = false;
+						$bread = 'nav::' . $index;
+						if(in_array($bread, $breads))
+						{
+							$active = true;
+						}
+						$children = collect($nav->get('children'));
+						$hasChildren = !$children->isEmpty();
+						if(empty($children[0]))
+						{
+							$hasChildren = false;
+						}
+						$title = $nav->get('title', null);
+						$url = cd_createUrl($nav->get('url', []));
+						$icon = $nav->get('icon', null);
+						$label = $nav->get('label', $title);
+						$str .= '<li class="' . ($active ? 'active' : null) . '" id="main-nav-' . $index . '">';
+						$str .= '<a href="' . $url . '" title="' . $title . '">';
+						$str .= '<i class="' . $icon . '"></i> ';
+						$str .= '<span class="title">' . $label . '</span>';
+						if($hasChildren)
+						{
+							$str .= '<span class="arrow"></span>';
+						}
+						$str .= '</a>';
+						if($hasChildren)
+						{
+							$str .= '<ul class="sub-menu">';
+
+							$str .= '<li class="" id="main-nav-' . $index . '">';
+							$str .= '<a href="' . $url . '" title="' . $title . '">';
+							$str .= '<i class="' . $icon . '"></i> ';
+							$str .= '<span class="title">' . $label . '</span>';
+							$str .= '</a>';
+							$str .= '</li>';
+							$str .= cd_backend_render_nav($navName, $children);
+							$str .= '</ul>';
+						}
+						$str .= '</li>';
+					}
+				}
+			}
+		}
+		return $str;
+	}
+
+}
+
 if(!function_exists('cd_backend_render_nav_main'))
 {
 
@@ -138,67 +214,9 @@ if(!function_exists('cd_backend_render_nav_main'))
 	 * Render Main Navigation
 	 * @param type $navs
 	 */
-	function cd_backend_render_nav_main($navs = null)
+	function cd_backend_render_nav_main()
 	{
-		$breads = app('cdbackend')->breadcrumb();
-		$str = '';
-		if(empty($navs))
-		{
-			$navs = cd_config('template.backend.nav.main');
-		}
-		$navs = collect($navs);
-		if(!$navs->isEmpty())
-		{
-			foreach ($navs as $index => $nav)
-			{
-				$nav = collect($nav);
-				$enable = $nav->get('enable', false);
-				$access = $nav->get('access', 'admin');
-				if($enable && cd_auth_is($access))
-				{
-					$active = false;
-					$bread = 'nav::' . $index;
-					if(in_array($bread, $breads))
-					{
-						$active = true;
-					}
-					$children = collect($nav->get('children'));
-					$hasChildren = !$children->isEmpty();
-					if(empty($children[0]))
-					{
-						$hasChildren = false;
-					}
-					$title = $nav->get('title', null);
-					$url = cd_createUrl($nav->get('url', []));
-					$icon = $nav->get('icon', null);
-					$label = $nav->get('label', $title);
-					$str .= '<li class="' . ($active ? 'active' : null) . '" id="main-nav-' . $index . '">';
-					$str .= '<a href="' . $url . '" title="' . $title . '">';
-					$str .= '<i class="' . $icon . '"></i> ';
-					$str .= '<span class="title">' . $label . '</span>';
-					if($hasChildren)
-					{
-						$str .= '<span class="arrow"></span>';
-					}
-					$str .= '</a>';
-					if($hasChildren)
-					{
-						$str .= '<ul class="sub-menu">';
-
-						$str .= '<li class="" id="main-nav-' . $index . '">';
-						$str .= '<a href="' . $url . '" title="' . $title . '">';
-						$str .= '<i class="' . $icon . '"></i> ';
-						$str .= '<span class="title">' . $label . '</span>';
-						$str .= '</a>';
-						$str .= '</li>';
-						$str .= cd_backend_render_nav_main($children);
-						$str .= '</ul>';
-					}
-					$str .= '</li>';
-				}
-			}
-		}
-		return $str;
+		return cd_backend_render_nav('main');
 	}
 
 }
