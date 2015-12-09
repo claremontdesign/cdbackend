@@ -25,6 +25,9 @@ class AuthController extends Controller
 	use Flasherror,
 	 Section;
 
+
+	protected $redirectAfterLogout = '/admin';
+
 	/**
 	 * The View Name
 	 * @param string $viewName
