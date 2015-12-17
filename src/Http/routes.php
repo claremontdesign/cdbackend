@@ -144,14 +144,11 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 				return $view;
 			}
 		}
-		cd_abort(404, 'Module Not Found.');
 	}
+	return cd_abort(404, 'Module Not Found.');
 
-	$backendClassname = cd_config('backend.class');
-	$backendController = new $backendClassname;
-	$backendController->setModule($module);
-	$backendController->setAction($action);
-	$backendController->setRecord($record);
-	$backendController->setParams(compact('paramOne', 'paramTwo'));
-	return $backendController->index();
+//	$backendClassname = cd_config('backend.class');
+//	$backendController = new $backendClassname;
+//	// $backendController->setParams(compact('paramOne', 'paramTwo','module','action'));
+//	return $backendController->index();
 })->name('adminModule');
