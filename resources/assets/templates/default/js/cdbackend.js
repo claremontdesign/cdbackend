@@ -69,9 +69,6 @@ function cd_backend()
 /**
  * Form
  */
-/**
- * Form
- */
 (function($) {
 	$.fn.cd_form = function(options) {
 
@@ -80,9 +77,10 @@ function cd_backend()
 		// This is the easiest way to have default options.
 		var settings = $.extend({
 		}, options);
+		that.validate();
 		that.find('.form-group.has-error').each(function() {
 			var tab = $(this).find('input,select,textarea').attr('data-tab');
-			if (tab)
+			if (tab !== undefined)
 			{
 				$('#form-nav-tab-' + tab).addClass('nav-tab-has-error');
 				$('#formtab_' + tab).addClass('tab-content-has-error');
@@ -98,3 +96,52 @@ function cd_backend()
 
 	};
 }(jQuery));
+/**
+ * Form
+ */
+
+/**
+ * jQuery Validation
+ */
+jQuery.validator.setDefaults({
+	errorElement: 'span', //default input error message container
+	errorClass: 'help-block help-block-error', // default input error message class
+	focusInvalid: false,
+	ignore: "",
+	meta: "validate",
+	invalidHandler: function(event, validator) {},
+	highlight: function(element) {
+		$(element).closest('.form-group').addClass('has-error');
+		var tab = $(element).attr('data-tab');
+		if (tab)
+		{
+			$('#form-nav-tab-' + tab).addClass('nav-tab-has-error');
+			$('#formtab_' + tab).addClass('tab-content-has-error');
+		}
+	},
+	unhighlight: function(element) {
+		$(element).closest('.form-group').removeClass('has-error');
+	},
+	success: function(label, element) {
+		$(element).closest('.form-group').removeClass('has-error');
+	},
+	errorPlacement: function(error, element) {
+		var type = element.attr('type');
+		if (type === 'checkbox') {
+			var name = element.attr('name');
+			if ($('#' + name + '_checkbox_error').length > 0)
+			{
+				error.insertAfter($('#' + name + '_checkbox_error'));
+				return;
+			}
+		}
+		if (element.closest('.input-icon').size() === 1) {
+			error.insertAfter(element.closest('.input-icon'));
+		} else {
+			error.insertAfter(element);
+		}
+	}
+});
+/**
+ * jQuery Validation
+ */
