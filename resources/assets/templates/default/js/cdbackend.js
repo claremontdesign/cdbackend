@@ -6,7 +6,10 @@ function cd_backend()
 {
 	console.log('Hi!');
 }
-
+function cd_prefix()
+{
+	return 'cdbase';
+}
 (function($) {
 	$.fn.cd_datatableSort = function(options) {
 
@@ -109,7 +112,8 @@ jQuery.validator.setDefaults({
 	focusInvalid: false,
 	ignore: "",
 	meta: "validate",
-	invalidHandler: function(event, validator) {},
+	invalidHandler: function(event, validator) {
+	},
 	highlight: function(element) {
 		$(element).closest('.form-group').addClass('has-error');
 		var tab = $(element).attr('data-tab');
@@ -144,4 +148,22 @@ jQuery.validator.setDefaults({
 });
 /**
  * jQuery Validation
+ */
+/**
+ * Saving State
+ */
+$(document).ready(function() {
+	$('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+		$.cookie(cd_prefix() + 'last_tab', $(e.target).attr('href'));
+	});
+	var lastTab = $.cookie(cd_prefix() + 'last_tab');
+	if (lastTab && $('a[href=' + lastTab + ']').length > 0) {
+		$('ul.nav-tabs').children().removeClass('active');
+		$('a[href=' + lastTab + ']').parents('li:first').addClass('active');
+		$('div.tab-content').children().removeClass('active');
+		$(lastTab).addClass('active');
+	}
+});
+/**
+ * Saving State
  */
