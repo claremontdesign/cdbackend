@@ -29,5 +29,4 @@ class Cdbackend extends Cdbase
 			__DIR__ . '/../config/dashboard/dashboard.php'
 		];
 	}
-
 }

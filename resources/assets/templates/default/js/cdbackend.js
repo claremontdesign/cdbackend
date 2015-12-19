@@ -11,22 +11,26 @@ function cd_prefix()
 	return 'cdbase';
 }
 (function($) {
-	$.fn.cd_datatableSort = function(options) {
+	$.fn.cd_datatable = function(options) {
 
 		var that = this;
 
 		// This is the easiest way to have default options.
 		var settings = $.extend({
-			url: '#'
+			url: '#',
+			sortable: false,
 		}, options);
 
-		that.find('tbody').sortable({
-			placeholder: "ui-state-highlight",
-			helper: cdbackend_sortable_fixsorting,
-			stop: function(event, ui) {
-				cdbackend_sortable_renumber_table();
-			}
-		}).disableSelection();
+		if(settings.sortable)
+		{
+			that.find('tbody').sortable({
+				placeholder: "ui-state-highlight",
+				helper: cdbackend_sortable_fixsorting,
+				stop: function(event, ui) {
+					cdbackend_sortable_renumber_table();
+				}
+			}).disableSelection();
+		}
 
 		/**
 		 * Fix Sorting
@@ -168,24 +172,90 @@ $(document).ready(function() {
  * Saving State
  */
 /**
+ * Utilities
+ */
+/**
+ * Send a toasted message
+ * @param obj object
+ * @returns void
+ */
+function _toast(obj)
+{
+	toastr.options = {
+	  "closeButton": true,
+	  "debug": false,
+	  "positionClass": "toast-top-right",
+	  "onclick": null,
+	  "showDuration": "1000",
+	  "hideDuration": "1000",
+	  "timeOut": "5000",
+	  "extendedTimeOut": "1000",
+	  "showEasing": "swing",
+	  "hideEasing": "linear",
+	  "showMethod": "fadeIn",
+	  "hideMethod": "fadeOut"
+	};
+	toastr[obj.type](obj.msg, obj.title);
+}
+/**
+ * show loader on the target block
+ * @param target string  target selector
+ * @returns void
+ */
+function _loader(target)
+{
+	App.blockUI({
+		target: target
+	});
+}
+/**
+ * Toggle loader
+ * @param target string The target selector
+ * @returns void
+ */
+function _unloader(target)
+{
+	App.unblockUI(target);
+}
+/**
+ * Utilities
+ */
+/**
  * AJAX
  */
 $.ajaxSetup({
-	headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
+	headers: {'X-CSRF-Token': $('meta[name=_token]').attr('content')}
 });
+/**
+ * Process a JSON Object
+ * @param json object The JSON Object
+ * @returns void
+ */
+function jsonObject(json)
+{
+	// update token
+	if (json._token !== undefined)
+	{
+		$('meta[name=_token]').attr('content', json._token);
+	}
+	if(json.messages !== undefined)
+	{
+		if(json.messages.toasts !== undefined)
+		{
+			$.each(json.messages.toasts, function(){
+				_toast(this);
+			});
+		}
+	}
+}
 $(document).ajaxComplete(function(event, request, settings) {
+	jsonObject(request.responseJSON);
 });
-$(document).ajaxError(function(event, request, settings) {
-});
-$(document).ajaxSend(function(event, request, settings) {
-});
-$(document).ajaxStart(function() {
-});
-$(document).ajaxStop(function() {
-});
-$(document).ajaxSuccess(function(event, request, settings) {
-});
-
+$(document).ajaxError(function(event, request, settings) {});
+$(document).ajaxSend(function(event, request, settings) {});
+$(document).ajaxStart(function() {});
+$(document).ajaxStop(function() {});
+$(document).ajaxSuccess(function(event, request, settings) {});
 /**
  * AJAX
  */

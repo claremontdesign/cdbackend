@@ -14,10 +14,10 @@
  * @package Cdbackend
  */
 Route::filter('csrf', function() {
-    $token = \Request::ajax() ? \Request::header('X-CSRF-Token') : Input::get('_token');
-    if (Session::token() != $token)
+	$token = \Request::ajax() ? \Request::header('X-CSRF-Token') : Input::get('_token');
+	if(Session::token() != $token)
 	{
-        throw new Illuminate\Session\TokenMismatchException;
+		throw new Illuminate\Session\TokenMismatchException;
 	}
 });
 
@@ -63,11 +63,11 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 	{
 		if(cd_auth_check())
 		{
-			return cd_abort(401, ucfirst($minimumAccess) . ' Permission is required to access "Admin".');
+			return cd_response(cd_abort(401, ucfirst($minimumAccess) . ' Permission is required to access "Admin".'));
 		}
 		else
 		{
-			return redirect(cd_route('login'));
+			return cd_response(redirect(cd_route('login')));
 		}
 	}
 
@@ -91,11 +91,11 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 			{
 				if(cd_auth_check())
 				{
-					return cd_abort(401, ucfirst($moduleInstance->getAccess()) . ' Permission is required to access module "' . ucfirst($module) . '".');
+					return cd_response(cd_abort(401, ucfirst($moduleInstance->getAccess()) . ' Permission is required to access module "' . ucfirst($module) . '".'));
 				}
 				else
 				{
-					return redirect(cd_route('login'));
+					return cd_response(redirect(cd_route('login')));
 				}
 			}
 
@@ -104,7 +104,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 			 */
 			if(!$moduleInstance->checkActionMethods($action))
 			{
-				return cd_abort(401, 'Page cannot be accessed directly.');
+				return cd_response(cd_abort(401, 'Page cannot be accessed directly.'));
 			}
 
 			/**
@@ -112,7 +112,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 			 */
 			if(!$moduleInstance->checkAction($action))
 			{
-				return cd_abort(404, 'Module: ' . ucfirst($module) . ' or path not found');
+				return cd_response(cd_abort(404, 'Module: ' . ucfirst($module) . ' or path not found'));
 			}
 			/**
 			 * Check if currentUser has access to this action
@@ -121,11 +121,11 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 			{
 				if(cd_auth_check())
 				{
-					return cd_abort(401, ucfirst($moduleInstance->getAccess()) . ' Permission is required.');
+					return cd_response(cd_abort(401, ucfirst($moduleInstance->getAccess()) . ' Permission is required.'));
 				}
 				else
 				{
-					return redirect(cd_route('login'));
+					return cd_response(redirect(cd_route('login')));
 				}
 			}
 			/**
@@ -134,7 +134,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 			$parentRecord = $moduleInstance->checkParentRecord($action);
 			if($parentRecord !== true)
 			{
-				return cd_abort(404, $parentRecord);
+				return cd_response(cd_abort(404, $parentRecord));
 			}
 			$controller = $moduleInstance->controllerInstance();
 			$controller->setAction($action);
@@ -143,7 +143,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 			$methodName = camel_case(strtolower($requestMethod . '_' . $action));
 			if(method_exists($controller, $methodName))
 			{
-				return $controller->$methodName();
+				return cd_response($controller->$methodName());
 			}
 			$widgets = $moduleInstance->widgets($action, $controller);
 			if(!empty($widgets))
@@ -151,21 +151,97 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 				$widgetActionMethod = camel_case(strtolower($requestMethod . '_' . $action . '_widget'));
 				if(method_exists($controller, $widgetActionMethod))
 				{
-					return $controller->$widgetActionMethod($widgets);
+					return cd_response($controller->$widgetActionMethod($widgets));
 				}
 				$widgetMethod = camel_case(strtolower($requestMethod . '_widget'));
 				if(method_exists($controller, $widgetMethod))
 				{
-					return $controller->$widgetMethod($widgets);
+					return cd_response($controller->$widgetMethod($widgets));
 				}
-				return $controller->widgets($widgets);
+				return cd_response($controller->widgets($widgets));
 			}
 			$view = $moduleInstance->renderView($action, $controller);
 			if($view instanceof \Illuminate\View\View)
 			{
-				return $view;
+				return cd_response($view);
 			}
 		}
 	}
-	return cd_abort(404, 'Module Not Found.');
+	return cd_response(cd_abort(404, 'Module Not Found.'));
 })->name('adminModule');
+
+/**
+ * JSON Responses Indexes
+ *
+ *
+ * messages => [
+ *		alerts => [
+ *			'errors' => [
+ *				[
+ *					msg:
+ *					elements: []
+ *					config => [
+ *						position:
+ *						selector:
+ *					]
+ *				]
+ *			]
+ *			'success' => []
+ *		]
+ *		toasts => [
+ *			[
+ *				type: danger|error|warning|info|success
+ *				msg:
+ *				title:
+ *				config: {}
+ *			]
+ *		]
+ *		notifications => [
+ *			'errors' => []
+ *			'success' => []
+ *		]
+ *		dialog => [
+ *			'errors' => []
+ *			'success' => []
+ *		],
+ * ]
+ * session => [
+ *		timeout => true,
+ *		message:
+ * ]
+ * redirect => [
+ *		url: the url to redirect the page
+ *		message:
+ *		poll:
+ * ]
+ * login => [
+ *		relogin: true|false
+ *		message:
+ * ]
+ * exception => [
+ *		url:
+ *		code:
+ *		error:
+ * ]
+ * success: true|false,
+ * script => [
+ *		[
+ *			script:
+ *			enable:
+ *		]
+ * ]
+ * dom => [
+ *		[
+ *			selector: the selector
+ *			val: update value of the selector
+ *			text: update text content of the selector
+ *			html: update content of the selector
+ *			toggle: toggle selector disable to enable vice versa
+ *		]
+ * ]
+ * form => [
+ *		id:
+ * ]
+ * _token:
+ */
+
