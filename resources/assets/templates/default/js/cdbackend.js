@@ -167,3 +167,25 @@ $(document).ready(function() {
 /**
  * Saving State
  */
+/**
+ * AJAX
+ */
+$.ajaxSetup({
+	headers: { 'X-CSRF-Token' : $('meta[name=_token]').attr('content') }
+});
+$(document).ajaxComplete(function(event, request, settings) {
+});
+$(document).ajaxError(function(event, request, settings) {
+});
+$(document).ajaxSend(function(event, request, settings) {
+});
+$(document).ajaxStart(function() {
+});
+$(document).ajaxStop(function() {
+});
+$(document).ajaxSuccess(function(event, request, settings) {
+});
+
+/**
+ * AJAX
+ */

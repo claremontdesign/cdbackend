@@ -30,7 +30,9 @@ return [
 		],
 	],
 	'module' => [
-		'class' => Claremontdesign\Cdbackend\Http\Controllers\ModuleController::class
+		'controller' => [
+			'class' => Claremontdesign\Cdbackend\Http\Controllers\ModuleController::class
+		]
 	],
 	'auth' => [
 		'enable' => true,

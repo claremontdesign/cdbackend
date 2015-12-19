@@ -13,9 +13,19 @@
  * @project Claremontdesign
  * @package Cdbackend
  */
+Route::filter('csrf', function() {
+    $token = \Request::ajax() ? \Request::header('X-CSRF-Token') : Input::get('_token');
+    if (Session::token() != $token)
+	{
+        throw new Illuminate\Session\TokenMismatchException;
+	}
+});
+
 Route:get('claremontdesign/cdbackend', function(){
 	return 'ClaremontDesign Backend Package. Try more at <a href="' . cd_route('admin') . '" title="Backend Entry">Backend Gate</a>';
 });
+
+
 
 Route::get('/admin/login', ['as' => 'adminlogin', function () {
 app('cdbase')->setSection('admin');
@@ -53,7 +63,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 	{
 		if(cd_auth_check())
 		{
-			cd_abort(401, ucfirst($minimumAccess) . ' Permission is required to access "Admin".');
+			return cd_abort(401, ucfirst($minimumAccess) . ' Permission is required to access "Admin".');
 		}
 		else
 		{
@@ -81,7 +91,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 			{
 				if(cd_auth_check())
 				{
-					cd_abort(401, ucfirst($moduleInstance->getAccess()) . ' Permission is required to access module "' . ucfirst($module) . '".');
+					return cd_abort(401, ucfirst($moduleInstance->getAccess()) . ' Permission is required to access module "' . ucfirst($module) . '".');
 				}
 				else
 				{
@@ -90,11 +100,19 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 			}
 
 			/**
+			 * Check action Methods
+			 */
+			if(!$moduleInstance->checkActionMethods($action))
+			{
+				return cd_abort(401, 'Page cannot be accessed directly.');
+			}
+
+			/**
 			 * Check if $action is dispatchable
 			 */
 			if(!$moduleInstance->checkAction($action))
 			{
-				cd_abort(404, 'Module: ' . ucfirst($module) . ' or path not found');
+				return cd_abort(404, 'Module: ' . ucfirst($module) . ' or path not found');
 			}
 			/**
 			 * Check if currentUser has access to this action
@@ -103,7 +121,7 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 			{
 				if(cd_auth_check())
 				{
-					cd_abort(401, ucfirst($moduleInstance->getAccess()) . ' Permission is required.');
+					return cd_abort(401, ucfirst($moduleInstance->getAccess()) . ' Permission is required.');
 				}
 				else
 				{
@@ -113,7 +131,11 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 			/**
 			 * Action Record
 			 */
-			$moduleInstance->checkParentRecord();
+			$parentRecord = $moduleInstance->checkParentRecord($action);
+			if($parentRecord !== true)
+			{
+				return cd_abort(404, $parentRecord);
+			}
 			$controller = $moduleInstance->controllerInstance();
 			$controller->setAction($action);
 			$controller->setRecord($record);
@@ -146,9 +168,4 @@ Route::match(['get', 'post'], '/admin/{module?}/{action?}/{record?}/{paramOne?}/
 		}
 	}
 	return cd_abort(404, 'Module Not Found.');
-
-//	$backendClassname = cd_config('backend.class');
-//	$backendController = new $backendClassname;
-//	// $backendController->setParams(compact('paramOne', 'paramTwo','module','action'));
-//	return $backendController->index();
 })->name('adminModule');
