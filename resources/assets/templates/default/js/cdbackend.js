@@ -2,6 +2,10 @@
  * CD Backend
  * @returns void
  */
+function dd(v)
+{
+	console.log(v);
+}
 function cd_backend()
 {
 	console.log('Hi!');
@@ -9,6 +13,20 @@ function cd_backend()
 function cd_prefix()
 {
 	return 'cdbase';
+}
+/**
+ * Revert an elements's value/content to original content/value,
+ *	selector should have "data-originalvalue" attribute
+ * @param selector string The selector
+ * @returns void
+ */
+function cd_revertTextToOriginal(selector)
+{
+	jQuery(selector).text(jQuery(selector).attr('data-originalvalue'));
+}
+function cd_revertValueToOriginal(selector)
+{
+	jQuery(selector).val(jQuery(selector).attr('data-originalvalue'));
 }
 (function($) {
 	$.fn.cd_datatable = function(options) {
@@ -19,26 +37,183 @@ function cd_prefix()
 		var settings = $.extend({
 			url: '#',
 			sortable: false,
+			ajaxSupport: false,
+			prefix: null
 		}, options);
-
-		if(settings.sortable)
+		if (settings.sortable)
 		{
 			that.find('tbody').sortable({
 				placeholder: "ui-state-highlight",
-				helper: cdbackend_sortable_fixsorting,
+				helper: sortable_fixsorting,
 				stop: function(event, ui) {
-					cdbackend_sortable_renumber_table();
+					sortable_renumber_table();
 				}
 			}).disableSelection();
 		}
 
+		if (settings.ajaxSupport)
+		{
+			// submit filters
+			that.find('.btn-filter').off('click').click(function(e) {
+				e.preventDefault();
+				filterable(false);
+				// that.find('.column-type-sortable').hide();
+			});
+			// Reset Filters
+			that.find('.btn-filter-reset').off('click').click(function(e) {
+				e.preventDefault();
+				that.find('.filter-input').val('');
+				filterable(true);
+				// that.find('.column-type-sortable').show();
+			});
+			// Sorting
+			that.find('.column-sortable a').off('click').click(function(e) {
+				e.preventDefault();
+				var formData = getCurrentFilters() + '&sort=' + $(this).attr('data-sort');
+				// var formData = {sort: $(this).attr('data-sort')};
+				$.ajax({
+					type: 'POST',
+					url: settings.url,
+					dataType: 'json',
+					data: formData,
+					beforeSend: function() {
+						_loader(that.find('tbody'));
+					},
+					complete: function() {
+						_unloader(that.find('tbody'));
+					}
+				});
+			});
+			// Pagination
+			that.find('.paginator a').off('click').click(function(e) {
+				e.preventDefault();
+				var rel = null;
+				var currentPage = getCurrentPage();
+				var page = parseInt($(this).text());
+				if ($(this).attr('rel') !== undefined)
+				{
+					rel = $(this).attr('rel');
+				}
+				if (rel === 'next')
+				{
+					page = currentPage + 1;
+				}
+				if (rel === 'prev')
+				{
+					page = currentPage - 1;
+				}
+				var formData = getCurrentFilters() + '&page=' + page+'&sort='+getCurrentSorting();;
+				$.ajax({
+					type: 'POST',
+					url: settings.url,
+					data: formData,
+					dataType: 'json',
+					beforeSend: function() {
+						_loader(that.find('tbody'));
+					},
+					complete: function() {
+						_unloader(that.find('tbody'));
+					}
+				});
+			});
+			//Position
+			that.find('input[data-positioning]').off('change').change(function() {
+				if ($(this).val() !== $(this).attr('data-originalvalue'))
+				{
+					$(this).addClass('valueModified');
+				} else {
+					$(this).removeClass('valueModified');
+				}
+				var sortingId = that.attr('id') + 'savePositioning';
+				if (that.find('#' + sortingId).length < 1)
+				{
+					var tdCount = that.find('tr td').length;
+					var newTr = '<tr id="' + sortingId + '" class="highlight row-highlight"><td colspan="' + tdCount + '" style="text-align:center;">';
+					newTr += '<button id="' + settings.prefix + '_submitSort" type="submit" name="' + settings.prefix + '_submitSort" value="1" class="btn btn-success">Save Positions</button>';
+					newTr += '&nbsp; <button id="' + settings.prefix + '_submitSortReset" type="submit" name="' + settings.prefix + '_submitSortReset" value="1" class="btn btn-danger">Reset</button>';
+					newTr += '</td></tr>';
+					that.find('thead tr:last').after(newTr);
+					$('#' + settings.prefix + '_submitSort').click(function(e) {
+						e.preventDefault();
+					});
+					$('#' + settings.prefix + '_submitSortReset').click(function(e) {
+						e.preventDefault();
+						that.find('input[data-positioning].valueModified').each(function() {
+							cd_revertValueToOriginal(this);
+						});
+						$('#' + sortingId).remove();
+					});
+				}
+			});
+		}
+
+		/**
+		 * Return the current sorting
+		 * @returns {String}
+		 */
+		function getCurrentSorting()
+		{
+			if (that.find('.column-sortable-active').length > 0)
+			{
+				return that.find('.column-sortable-active').attr('data-sortindex')  + '-' + that.find('.column-sortable-active').attr('data-sortdir');
+			}
+		}
+
+		/**
+		 * Return the current page
+		 * @returns {unresolved}
+		 */
+		function getCurrentPage()
+		{
+			return parseInt(that.find('.paginator').attr('data-currentpage'));
+		}
+
+		/**
+		 * REtur current filters
+		 * @returns {unresolved}
+		 */
+		function getCurrentFilters()
+		{
+			return that.find('.filter-input').serialize() + '&' + settings.prefix + '_filter=1';;
+		}
+
+		/**
+		 *
+		 * @param {type} reset boolean If to reset
+		 */
+		function filterable(reset)
+		{
+			var formData = that.find('.filter-input').serialize();
+			if (reset === true)
+			{
+				formData += '&' + settings.prefix + '_filterReset=1';
+			} else {
+				formData += '&' + settings.prefix + '_filter=1';
+			}
+			$.ajax({
+				type: 'POST',
+				url: settings.url,
+				dataType: 'json',
+				data: formData,
+				beforeSend: function() {
+					_loader(that.find('tbody'));
+				},
+				complete: function() {
+					_unloader(that.find('tbody'));
+				}
+			});
+		}
+
+		/**
+		 * Sorting
+		 */
 		/**
 		 * Fix Sorting
 		 * @param {type} e
 		 * @param {type} tr
 		 * @returns {unresolved}
 		 */
-		function cdbackend_sortable_fixsorting(e, tr) {
+		function sortable_fixsorting(e, tr) {
 			var $originals = tr;
 			var $helper = tr.clone();
 			$helper.width($originals.width());
@@ -50,7 +225,7 @@ function cd_prefix()
 		 *
 		 * @returns {undefined}
 		 */
-		function cdbackend_sortable_renumber_table() {
+		function sortable_renumber_table() {
 			that.each(function() {
 				count = $(this).parent().children().index($(this)) + 1;
 				$(this).find('.sortable-order-num').html(count);
@@ -59,13 +234,16 @@ function cd_prefix()
 			if (that.find('#' + sortingId).length < 1)
 			{
 				var tdCount = that.find('tr td').length;
-				var newTr = '<tr id="' + sortingId + '" class="highlight"><td colspan="' + tdCount + '" style="text-align:center;">';
-				newTr += '<button type="submit" name="' + settings.prefix + '_submitSort" value="1" class="btn btn-success">Save Sorting</button>';
+				var newTr = '<tr id="' + sortingId + '" class="highlight row-highlight"><td colspan="' + tdCount + '" style="text-align:center;">';
+				newTr += '<button type="submit" name="' + settings.prefix + '_submitSort" value="1" class="btn btn-success">Save Positions</button>';
 				newTr += '&nbsp; <button type="submit" name="' + settings.prefix + '_submitSortReset" value="1" class="btn btn-danger">Reset</button>';
 				newTr += '</td></tr>';
 				that.find('thead tr:last').after(newTr);
 			}
 		}
+		/**
+		 * Sorting
+		 */
 	};
 }(jQuery));
 
@@ -182,18 +360,18 @@ $(document).ready(function() {
 function _toast(obj)
 {
 	toastr.options = {
-	  "closeButton": true,
-	  "debug": false,
-	  "positionClass": "toast-top-right",
-	  "onclick": null,
-	  "showDuration": "1000",
-	  "hideDuration": "1000",
-	  "timeOut": "5000",
-	  "extendedTimeOut": "1000",
-	  "showEasing": "swing",
-	  "hideEasing": "linear",
-	  "showMethod": "fadeIn",
-	  "hideMethod": "fadeOut"
+		"closeButton": true,
+		"debug": false,
+		"positionClass": "toast-top-right",
+		"onclick": null,
+		"showDuration": "1000",
+		"hideDuration": "1000",
+		"timeOut": "5000",
+		"extendedTimeOut": "1000",
+		"showEasing": "swing",
+		"hideEasing": "linear",
+		"showMethod": "fadeIn",
+		"hideMethod": "fadeOut"
 	};
 	toastr[obj.type](obj.msg, obj.title);
 }
@@ -218,6 +396,24 @@ function _unloader(target)
 	App.unblockUI(target);
 }
 /**
+ * Manipulate DOM
+ * @param {type} obj
+ * @returns {undefined}
+ */
+function _dom(obj)
+{
+	var selector = obj.selector !== undefined ? obj.selector : false;
+	var method = obj.method !== undefined ? obj.method : false;
+	var html = obj.html !== undefined ? obj.html : false;
+	if (selector !== false && method !== false && html !== false)
+	{
+		if (method === 'replace')
+		{
+			$(selector).replaceWith(html);
+		}
+	}
+}
+/**
  * Utilities
  */
 /**
@@ -238,24 +434,35 @@ function jsonObject(json)
 	{
 		$('meta[name=_token]').attr('content', json._token);
 	}
-	if(json.messages !== undefined)
+	if (json.messages !== undefined)
 	{
-		if(json.messages.toasts !== undefined)
+		if (json.messages.toasts !== undefined)
 		{
-			$.each(json.messages.toasts, function(){
+			$.each(json.messages.toasts, function() {
 				_toast(this);
 			});
 		}
+	}
+	if (json.htmls !== undefined)
+	{
+		$.each(json.htmls, function() {
+			_dom(this);
+		});
 	}
 }
 $(document).ajaxComplete(function(event, request, settings) {
 	jsonObject(request.responseJSON);
 });
-$(document).ajaxError(function(event, request, settings) {});
-$(document).ajaxSend(function(event, request, settings) {});
-$(document).ajaxStart(function() {});
-$(document).ajaxStop(function() {});
-$(document).ajaxSuccess(function(event, request, settings) {});
+$(document).ajaxError(function(event, request, settings) {
+});
+$(document).ajaxSend(function(event, request, settings) {
+});
+$(document).ajaxStart(function() {
+});
+$(document).ajaxStop(function() {
+});
+$(document).ajaxSuccess(function(event, request, settings) {
+});
 /**
  * AJAX
  */
