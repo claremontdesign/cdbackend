@@ -356,9 +356,7 @@ if(!function_exists('cd_backend_render_focusedEntity'))
 		}
 		if(!empty($str))
 		{
-			return '<div class="portlet focusedEntity">
-								<div class="portlet-title">
-									<div class="caption">' . implode('', $str) . '</div></div></div>';
+			return '<div class="portlet focusedEntity"><div class="portlet-title"><div class="caption">' . implode('', $str) . '</div></div></div>';
 		}
 		return null;
 	}

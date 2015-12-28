@@ -1,3 +1,35 @@
+//<editor-fold defaultstate="collapsed" desc="Hook">
+var Hook = {
+	hooks: [],
+	register: function(name, callback) {
+		if ('undefined' == typeof (Hook.hooks[name]))
+		{
+			Hook.hooks[name] = [];
+			Hook.hooks[name].push(callback);
+		}
+	},
+	call: function(name, arguments) {
+		if ('undefined' != typeof (Hook.hooks[name]))
+		{
+			for (i = 0; i < Hook.hooks[name].length; ++i)
+			{
+				if (true != Hook.hooks[name][i](arguments)) {
+					break;
+				}
+			}
+		}
+	}
+};
+//Hook.register(
+//  'quit',
+//  function ( args ) {
+//    alert( 'Bye!' );
+//    return true;
+//  }
+//);
+//Hook.call( 'quit', [ 'All Done' ] );
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="Utilities">
 /**
  * Utilities
  */
@@ -13,6 +45,7 @@ function cd_prefix()
 {
 	return 'cdbase';
 }
+
 /**
  * Send a toasted message
  * @param obj object
@@ -73,9 +106,20 @@ function _dom(obj)
 	var html = obj.html !== undefined ? obj.html : false;
 	if (selector !== false && method !== false && html !== false)
 	{
-		if (method === 'replace')
+		if ($(selector).length > 0)
 		{
-			$(selector).replaceWith(html);
+			switch (method)
+			{
+				case 'replace':
+					$(selector).replaceWith(html);
+					break;
+				case 'append':
+					$(selector).append(html);
+					break;
+				default:
+			}
+		} else {
+			$('body').append(html);
 		}
 	}
 }
@@ -86,14 +130,20 @@ function _script(obj)
 	var html = obj.html !== undefined ? obj.html : false;
 	if (selector !== false && method !== false && html !== false)
 	{
-		if (method === 'replace')
+		if ($(selector).length > 0)
 		{
-			if ($(selector).length > 0)
+			switch (method)
 			{
-				$(selector).replaceWith(html);
-			} else {
-				$('body').append(html);
+				case 'replace':
+					$(selector).replaceWith(html);
+					break;
+				case 'append':
+					$(selector).append(html);
+					break;
+				default:
 			}
+		} else {
+			$('body').append(html);
 		}
 	}
 }
@@ -131,8 +181,54 @@ function in_array(needle, haystack, argStrict) {
 	return false;
 }
 /**
+ * Defer load widgets
+ * @param target Target WidgetDiv
+ * @returns void
+ */
+function _deferLoadWidget(target)
+{
+	if ($(target).hasClass('form-tab-content-nosubmit'))
+	{
+		$(target).closest('form').find('.form-actions').hide();
+	} else {
+		$(target).closest('form').find('.form-actions').show();
+	}
+	$(target).find('div[data-defer="1"]').each(function() {
+		$.ajax({
+			type: 'POST',
+			url: $(this).attr('data-url'),
+			dataType: 'json',
+			data: {defer: 1, focusedEntity: 0},
+			beforeSend: function() {
+				_loader($(target));
+			},
+			complete: function() {
+				_unloader($(target));
+			}
+		});
+	});
+}
+function _tabSaveState()
+{
+	$('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+		$.cookie(cd_prefix() + 'last_tab', $(e.target).attr('href'));
+		_deferLoadWidget($(e.target).attr('href'));
+
+	});
+	var lastTab = $.cookie(cd_prefix() + 'last_tab');
+	if (lastTab && $('a[href=' + lastTab + ']').length > 0) {
+		$('ul.nav-tabs').children().removeClass('active');
+		$('a[href=' + lastTab + ']').parents('li:first').addClass('active');
+		$('div.tab-content').children().removeClass('active');
+		$(lastTab).addClass('active');
+		_deferLoadWidget(lastTab);
+	}
+}
+/**
  * Utilities
  */
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="Datatable">
 (function($) {
 	$.fn.cd_datatable = function(options) {
 
@@ -556,11 +652,11 @@ function in_array(needle, haystack, argStrict) {
 		 */
 	};
 }(jQuery));
-
 /**
  * Sorting Table Rows
  */
-
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="Form">
 /**
  * Form
  */
@@ -571,6 +667,8 @@ function in_array(needle, haystack, argStrict) {
 
 		// This is the easiest way to have default options.
 		var settings = $.extend({
+			prefix: null,
+			isAjax: false
 		}, options);
 		that.validate();
 		that.find('.form-group.has-error').each(function() {
@@ -588,12 +686,34 @@ function in_array(needle, haystack, argStrict) {
 			that.find('.form-nav-tab.nav-tab-has-error').eq(0).addClass('active');
 			that.find('.form-tab-content.tab-content-has-error').eq(0).addClass('active');
 		}
+		if (settings.isAjax)
+		{
+			$(this).submit(function(e) {
+				var form = this;
+				e.preventDefault();
+				$.ajax({
+					type: 'POST',
+					url: $(form).attr('action'),
+					dataType: 'json',
+					data: $(form).serialize(),
+					beforeSend: function() {
+						Hook.call('cd_form_beforeSend', [e, form]);
+						_loader($(this).parents('.widget-wrapper'));
+					},
+					complete: function() {
+						Hook.call('cd_form_complete', [e, form]);
+						_unloader($(this).parents('.widget-wrapper'));
+					}
+				});
+			});
+		}
 	};
 }(jQuery));
 /**
  * Form
  */
-
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="Validation">
 /**
  * jQuery Validation
  */
@@ -640,61 +760,7 @@ jQuery.validator.setDefaults({
 /**
  * jQuery Validation
  */
-/**
- * Saving State
- */
-/**
- * Defer load widgets
- * @param target Target WidgetDiv
- * @returns void
- */
-function _deferLoadWidget(target)
-{
-	if ($(target).hasClass('form-tab-content-nosubmit'))
-	{
-		$(target).closest('form').find('.form-actions').hide();
-	} else {
-		$(target).closest('form').find('.form-actions').show();
-	}
-	$(target).find('div[data-defer="1"]').each(function() {
-		$.ajax({
-			type: 'POST',
-			url: $(this).attr('data-url'),
-			dataType: 'json',
-			data: {defer: 1},
-			beforeSend: function() {
-				_loader($(target));
-			},
-			complete: function() {
-				_unloader($(target));
-			}
-		});
-	});
-}
-$(document).ready(function() {
-	$('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
-		$.cookie(cd_prefix() + 'last_tab', $(e.target).attr('href'));
-		_deferLoadWidget($(e.target).attr('href'));
-
-	});
-	var lastTab = $.cookie(cd_prefix() + 'last_tab');
-	if (lastTab && $('a[href=' + lastTab + ']').length > 0) {
-		$('ul.nav-tabs').children().removeClass('active');
-		$('a[href=' + lastTab + ']').parents('li:first').addClass('active');
-		$('div.tab-content').children().removeClass('active');
-		$(lastTab).addClass('active');
-		_deferLoadWidget(lastTab);
-	}
-});
-/**
- * Saving State
- */
-/**
- * AJAX
- */
-$.ajaxSetup({
-	headers: {'X-CSRF-Token': $('meta[name=_token]').attr('content')}
-});
+//</editor-fold>
 /**
  * Process a JSON Object
  * @param json object The JSON Object
@@ -728,9 +794,29 @@ function jsonObject(json)
 			_script(this);
 		});
 	}
+	if (json.dom !== undefined)
+	{
+		if (json.dom.focusedEntity !== undefined)
+		{
+			if ($('.focusedEntity').length > 0)
+			{
+				$('.focusedEntity').replaceWith(json.dom.focusedEntity);
+			} else {
+				$('.page-main-content-inner').prepend(json.dom.focusedEntity);
+			}
+		}
+	}
 }
+/**
+ * AJAX
+ */
+$.ajaxSetup({
+	headers: {'X-CSRF-Token': $('meta[name=_token]').attr('content')}
+});
 $(document).ajaxComplete(function(event, request, settings) {
 	jsonObject(request.responseJSON);
+	App.init();
+	_tabSaveState();
 });
 $(document).ajaxError(function(event, request, settings) {
 	_toast({type: 'error', msg: 'There was an error. Kindly try again later.', title: 'ERROR!'});
@@ -746,3 +832,6 @@ $(document).ajaxSuccess(function(event, request, settings) {
 /**
  * AJAX
  */
+$(document).ready(function() {
+	_tabSaveState();
+});
